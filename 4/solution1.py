@@ -9,13 +9,13 @@ class Guardlog():
         return str(self.timestamp)+ " " + self.message
 
 class Guard():
-    def __init__(self, id, sleepTime = timedelta(0), timesAsleep = 0):
+    def __init__(self, id, sleepTime = 0):
         self.id = id
         self.sleepTime = sleepTime
-        self.timesAsleep = timesAsleep
+        self.sleepIntervals = []
 
     def __str__(self):
-        return self.id + ": " + str(self.sleepTime)
+        return str(self.sleepTime) + ": " + str(self.sleepIntervals)
 
 
 indata = open("indata.txt", "r")
@@ -29,20 +29,43 @@ for line in indata:
 guards = []
 guard = None
 logs.sort(key = lambda x: x.timestamp)
+"""
+sortedFile = open("sorted_indata.txt", "w")
+for l in logs:
+    sortedFile.write(str(l)+"\n")
+sortedFile.close()
+"""
+g = {}
+
 for log in logs:
     logList = log.message.split(" ")
     if logList[0] == "Guard":
-        if guard != None:
-            guards.append(guard)
         guardID = logList[1][1:]
-        guard = Guard(guardID)
+        if guardID not in g.keys():
+            g[guardID] = Guard(guardID)
     elif logList[0] == "falls":
-        guard.timesAsleep+= 1
-        sleepStart = log.timestamp
+        sleepStart = log.timestamp.minute
     elif logList[0] == "wakes": 
-        guard.sleepTime += log.timestamp - sleepStart  
+        g[guardID].sleepIntervals.append({x for x in range(sleepStart, log.timestamp.minute)})
+        g[guardID].sleepTime += log.timestamp.minute  - sleepStart  
 
+#for key in g:
+#    print(key, str(g[key]))
+
+guardList = [guard for guard in g.values()]
+guardList.sort(key= lambda g:g.sleepTime, reverse = True)
+minuite_list = [0]*60
+for intervals in guardList[0].sleepIntervals:
+    for m in intervals:
+        minuite_list[m]+=1
+
+maxMin = max(minuite_list)
+maxMinIndex = [index for index, minuite in enumerate(minuite_list) if minuite == maxMin ]
+
+print(maxMinIndex[0]*int(guardList[0].id))
+"""
 guards.sort(key=lambda g: g.sleepTime, reverse = True)
-sleepyGuard = guards[0]
-
-print( int(guards[0].id) * (((sleepyGuard.sleepTime.seconds%3600)//60) -sleepyGuard.timesAsleep ))
+for interval in guards[0].sleepIntervals:
+    print(interval)
+print( int(guards[0].id))
+"""
