@@ -46,15 +46,22 @@ class PolymerList():
         return (abs(ord(a.data) - ord(b.data))) == 32
     
 
-indata = open("indata_test.txt", "r")
+indata = open("indata.txt", "r")
+polyTypes = []
 poly = indata.readline().strip()
-
-p = PolymerList()
-for c in poly:
-    p.put(c)
-print(p.length)
 indata.close()
 
+for p in poly:
+    if p.lower() not in polyTypes:
+        polyTypes.append(p.lower())
+minPoly = []
+for rmPoly in polyTypes:
+    p = PolymerList()
+    for c in poly:
+        if c.lower() != rmPoly:
+            p.put(c)
+    minPoly.append(p.length)
+print(min(minPoly))
 
 
 
